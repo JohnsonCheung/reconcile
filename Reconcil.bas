@@ -75,6 +75,7 @@ End Sub
 Private Sub ZTrmTxt(Tmp$)
 TrmTxtFld1 "#" & Tmp
 End Sub
+
 Sub ZCrtInp(B6RecItmNm$)
 A$ = B6RecItmNm
 Log FmtQQ("Start Download qryB6Rec_? Into INP_?", A, A)
@@ -86,6 +87,7 @@ A$ = ""
 RunSql FmtQQ("Alter Table [#?] add column K_SRC TEXT(8)", Itm)
 RunSql FmtQQ("Update [#?] Set K_SRC='?'", Itm, A)
 End Sub
+
 Private Sub ZAddCol_K_SRC_Dnl_TmpTbl_AddCol_K_SRC()
 
 RunSql "Alter Table [#INB] add column K_SRC TEXT(8)"

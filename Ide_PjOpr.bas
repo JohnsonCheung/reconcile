@@ -35,10 +35,10 @@ P$ = PjSrcPth(Pj)
 Dim A$(): A = CommitPj__BatchContentAy(P, Msg)
 B$ = PjPth(Pj) & "Commit.bat"
 WrtAy A, B
-Shell B
+Shell "C:\Users\cheungj\AppData\Local\Programs\Git\git-cmd.exe " & B
 End Sub
 Private Property Get CommitPj__BatchContentAy(PjSrcPth$, Msg$) As String()
-Dim O$
+Dim O$()
 Drive = Left(PjSrcPth, 2)
 CD$ = "CD " & PjSrcPth
 GitInit_IfNeeded$ = "IF NOT EXIST .git git init"
@@ -48,6 +48,7 @@ Push O, CD
 Push O, GitInit_IfNeeded
 Push O, "git add *"
 Push O, "git commit -m """ & Msg & """"
+Push O, "pause"
 CommitPj__BatchContentAy = O
 End Property
 Sub CommitCurPj()
