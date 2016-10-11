@@ -111,12 +111,6 @@ Excel.Application.Visible = True
 Stop
 End Sub
 
-Private Sub ZZZ_ZSq()
-A1$ = "A;B;C;D;E"
-A2$ = "1;2;3;4;5"
-BrwSq ZSq(A1, A2)
-End Sub
-
 Sub AA()
 ZZZ_CvEDI
 End Sub
@@ -223,6 +217,10 @@ Fmt_Ws1Sq At, Sq1(0)
 At.Application.Visible = True
 End Sub
 
+Private Property Get ZZV_EDITy$()
+ZZV_EDITy = B_EDITy(FfnFn(ZZV_A_Fv))
+End Property
+
 Private Property Get ZZV_InpAy() As String()
 ZZV_InpAy = FtAy(ZZV_A_Fv)
 End Property
@@ -257,11 +255,11 @@ ZZV_Fx = ReplExt(ZZV_A_Fv, ".xlsx")
 End Function
 
 Private Property Get ZZV_Ws1_Sq() As Variant()
-ZZV_Ws1_Sq = BrkEDI(ZZV_InpAy, EDITy)(0)
+ZZV_Ws1_Sq = BrkEDI(ZZV_InpAy, ZZV_EDITy)(0)
 End Property
 
 Private Property Get ZZV_Ws2_Sq() As Variant()
-ZZV_Ws2_Sq = BrkEDI(ZZV_InpAy)(1)
+ZZV_Ws2_Sq = BrkEDI(ZZV_InpAy, ZZV_EDITy)(1)
 End Property
 
 Private Function ZZV_Ws1_At() As Range()

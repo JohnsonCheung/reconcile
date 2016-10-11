@@ -2,6 +2,10 @@ Attribute VB_Name = "EDI_BrkEDI"
 Option Compare Database
 Private Const ZZV_A_EDIPth = "C:\Users\cheungj\Desktop\reconciliation\EDI\"
 Private Const ZZV_A_Fv = ZZV_A_EDIPth & "SPO_KERRY_0000019776_20161006002522.csv"
+Sub AAAA()
+ZZZ_Sq1
+End Sub
+
 Private Property Get B_EDILinesRecNm$(EDITy$)
 'Each EDI has is own RecNm (HdrRecNm and DetRecNm) for `Lines`
 'All `EDI-Lines` record will be put as sq in Ws[Lines]
@@ -23,31 +27,41 @@ End Select
 B_EDILinesRecNm = O
 End Property
 
+Private Property Get B_EDITy$(Fv$)
+A$ = FfnFn(Fv)
+B_EDITy = Brk(A, "_").S1
+End Property
+
+Property Get BrkEDIFv(Fv$) As Variant()
+BrkEDIFv = BrkEDI(FtAy(Fv), B_EDITy(Fv))
+End Property
+
 Private Property Get ZZV_EDILinesRecNm$()
 ZZV_EDILinesRecNm = B_EDILinesRecNm(ZZV_EDITy)
 End Property
 
 Private Property Get ZZV_EDITy$()
-A$ = FfnFn(ZZV_A_Fv)
-ZZV_EDITy = Brk(A, "_").S1
+ZZV_EDITy = B_EDITy(ZZV_A_Fv)
 End Property
 
-Private Sub ZZZ_BrkEDI()
-Dim Act(): Act = BrkEDI(ZZV_InpAy)
+Private Sub ZZZ_BrkEDIFv()
+Dim Act(): Act = BrkEDIFv(ZZV_A_Fv)
 Dim ActSq1(): ActSq1 = Act(0)
 Dim ActSq2: ActSq2 = Act(1)
 BrwSq ActSq2, "Sq2"
 For J% = 0 To UB(ActSq1)
     BrwSq ActSq1(J), "Sq1-of-" & J & "-of-" & UB(ActSq1)
 Next
-Stop
 End Sub
 
-Property Get BrkEDI(InpAy$(), EDINm$) As Variant()
+
+Property Get BrkEDI(InpAy$(), EDITy$) As Variant()
 Dim LinTyAy$():    LinTyAy = B_LinTyAy(RmvBlankEle(InpAy))
 Dim LinTyGp As Gp: LinTyGp = Gp(LinTyAy)
-Dim Ay1$():            Ay1 = B_Ay1(InpAy, LinTyGp)
-Dim Ay2$():            Ay2 = B_Ay2(InpAy, LinTyGp)
+Dim EDILinesRecNm$: EDILinesRecNm = B_EDILinesRecNm(EDITy)
+Dim Av():               Av = B_Ay1_Ay2(InpAy, EDILinesRecNm)
+Dim Ay1$():            Ay1 = Av(0)
+Dim Ay2$():            Ay2 = Av(1)
 Dim Sq1():             Sq1 = B_Sq1(Ay1)
 Dim Sq2:               Sq2 = B_Sq2(Ay2)
 BrkEDI = Array(Sq1, Sq2)
@@ -59,19 +73,28 @@ Private Property Get B_LinTyGp(LinTyAy$()) As Gp
 B_LinTyGp = Gp(LinTyAy)
 End Property
 
-Private Property Get B_Ay2(InpAy$(), LinTyGp As Gp, EDILinesRecNm$) As String()
-U& = GpUB(LinTyGp)
-B& = GpIdx(LinTyGp, U - 2).BIdx
-E& = GpIdx(LinTyGp, U - 1).EIdx
-B_Ay2 = CutAy(InpAy, B, E)
-End Property
 
-Private Property Get B_Ay1(InpAy$(), LinTyGp As Gp, EDILinesRecNm$) As String()
-U% = GpUB(LinTyGp)
-E& = LinTyGp.EIdx(U - 3)
-B_Ay1 = CutAy(InpAy, 0, E)
+Private Property Get B_Ay1_Ay2(InpAy$(), EDILinesRecNm$) As Variant()
+Dim O1$(), O2$()
+R1$ = Brk(InpAy(0), ";").S1
+R2$ = RmvLastChr(R1) & "T"
+U% = UB(InpAy)
+A1$ = EDILinesRecNm & "H"
+A2$ = EDILinesRecNm & "D"
+For J% = 0 To U
+    L$ = InpAy(J)
+    If IsPfx(L, A1) Then Push O2, L: GoTo Nxt
+    If IsPfx(L, A2) Then Push O2, L: GoTo Nxt
+    If IsPfx(L, R2) Then
+        B_Ay1_Ay2 = Array(O1, O2)
+        Exit Property
+    End If
+    Push O1, L
+Nxt:
+Next
+BrwAy InpAy, "InpAy"
+Er "Impossible to reach here: In [InpAy], it should have {End-Rec-Type-Name} which is determined by {Beg-Rec-Type-Name}", R2, R1
 End Property
-
 Private Property Get B_LinTyAy(InpAy) As String()
 Dim O$()
 U& = UB(InpAy)
@@ -106,7 +129,8 @@ End Sub
 Private Sub ZZZ_ZSq()
 A1$ = "A;B;C;D;E"
 A2$ = "1;2;3;4;5"
-BrwSq ZSq(A1, A2)
+A3$ = "6;7;8;9;10"
+BrwSq ZSq(A1, StrAy(A2, A3))
 End Sub
 
 
@@ -126,11 +150,11 @@ ZZV_LinTyGp = B_LinTyGp(ZZV_LinTyAy)
 End Property
 
 Private Property Get ZZV_Ay2() As String()
-ZZV_Ay2 = B_Ay2(ZZV_InpAy, ZZV_LinTyGp)
+ZZV_Ay2 = B_Ay1_Ay2(ZZV_InpAy, ZZV_EDILinesRecNm)(1)
 End Property
 
 Private Property Get ZZV_Ay1() As String()
-ZZV_Ay1 = B_Ay1(ZZV_InpAy, ZZV_LinTyGp)
+ZZV_Ay1 = B_Ay1_Ay2(ZZV_InpAy, ZZV_EDILinesRecNm)(0)
 End Property
 
 Private Property Get ZZV_LinTyAy() As String()
@@ -146,11 +170,22 @@ ZZV_Sq1 = B_Sq1(ZZV_Ay1)
 End Property
 
 Private Property Get B_Sq1(Ay1$()) As Variant()
+Dim A$, B$()
 Dim O()
-Push O, ZSq(Ay1(0), Ay1(1))
-For J% = 2 To UB(Ay1) Step 2
-    Push O, ZSq(Ay1(J), Ay1(J + 1))
+A = Ay1(0)
+Pfx$ = RmvLastChr(Brk(A, ";").S1) & "D"
+For J% = 1 To UB(Ay1)
+    L$ = Ay1(J)
+    If IsPfx(L, Pfx) Then
+        Push B, L
+    Else
+        Push O, ZSq(A, B)
+        A = L
+        Pfx$ = RmvLastChr(Brk(A, ";").S1) & "D"
+        Erase B
+    End If
 Next
+Push O, ZSq(A, B)
 B_Sq1 = O
 End Property
 
@@ -169,15 +204,20 @@ Next
 B_Sq2 = O
 End Property
 
-Private Property Get ZSq(A$, B$)
+Private Property Get ZSq(A$, B$())
 A1 = Split(A, ";")
-B1 = Split(B, ";")
+Dim B1()
+For J% = 0 To UB(B)
+    Push B1, Split(B(J), ";")
+Next
 N% = Sz(A1)
 Dim O$()
-ReDim O(1 To N, 1 To 2)
+ReDim O(1 To N, 1 To 1 + Sz(B1))
 For J% = 1 To N
     O(J, 1) = A1(J - 1)
-    O(J, 2) = B1(J - 1)
+    For I% = 0 To UB(B1)
+        O(J, 2 + I) = B1(I)(J - 1)
+    Next
 Next
 ZSq = O
 End Property

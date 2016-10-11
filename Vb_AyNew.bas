@@ -1,6 +1,10 @@
 Attribute VB_Name = "Vb_AyNew"
 Option Compare Database
-
+Property Get StrAy(ParamArray Ap()) As String()
+Dim Av()
+Av = Ap
+StrAy = CvAyToStr(Av)
+End Property
 Property Get TrmAy(Ay) As String()
 U& = UB(Ay)
 If U = -1 Then Exit Property

@@ -51,6 +51,6 @@ Push O, "git commit -m """ & Msg & """"
 Push O, "pause"
 CommitPj__BatchContentAy = O
 End Property
-Sub CommitCurPj()
-CommitPj CurPj
+Sub CommitCurPj(Optional Msg$ = "commit")
+CommitPj CurPj, Msg
 End Sub

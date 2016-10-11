@@ -449,7 +449,7 @@ CC_HAlign = Array(H, C)
 End Property
 
 Private Property Get ZZV_Sq2()
-ZZV_Sq2 = BrkEDI(FtAy(ZZV__Fv))(1)
+ZZV_Sq2 = BrkEDIFv(ZZV__Fv)(1)
 End Property
 
 Private Sub ZZX_Set_AB_Var()
