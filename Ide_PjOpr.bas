@@ -35,7 +35,7 @@ P$ = PjSrcPth(Pj)
 Dim A$(): A = CommitPj__BatchContentAy(P, Msg)
 B$ = PjPth(Pj) & "Commit.bat"
 WrtAy A, B
-Shell "C:\Users\cheungj\AppData\Local\Programs\Git\git-cmd.exe " & B
+Shell "C:\Users\cheungj\AppData\Local\Programs\Git\git-cmd.exe " & B, vbMaximizedFocus
 End Sub
 Private Property Get CommitPj__BatchContentAy(PjSrcPth$, Msg$) As String()
 Dim O$()
