@@ -12,6 +12,9 @@ Else
     CvPth = Pth
 End If
 End Property
+Sub OpnPth(Pth$)
+Shell "explorer """ & Pth & """", vbMaximizedFocus
+End Sub
 Property Get PthFfnAy(Pth$, Optional SPEC$ = "*.*") As String()
 P$ = EnsureBackSlash(Pth)
 PthFfnAy = AddAyPfx(PthFnAy(P, SPEC), P)

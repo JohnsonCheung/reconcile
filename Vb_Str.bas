@@ -152,6 +152,11 @@ End Property
 Property Get IsPfx(S$, Pfx$) As Boolean
 IsPfx = Left(S, Len(Pfx)) = Pfx
 End Property
+Property Get IsPfxAy(S$, PfxAy$()) As Boolean
+For Each I In PfxAy
+    If IsPfx(S, CStr(I)) Then IsPfxAy = True: Exit Property
+Next
+End Property
 Property Get RmvPfx$(S$, Pfx$)
 If IsPfx(S, Pfx) Then
     RmvPfx = Mid(S, Len(Pfx) + 1)

@@ -5,6 +5,15 @@ Dim Av()
 Av = Ap
 StrAy = CvAyToStr(Av)
 End Property
+Property Get ReplAyTab(Ay) As String()
+U& = UB(Ay)
+If U = -1 Then Exit Property
+ReDim O$(U)
+For J& = 0 To UB(Ay)
+    O(J) = Replace(Ay(J), vbTab, " ")
+Next
+ReplAyTab = O
+End Property
 Property Get TrmAy(Ay) As String()
 U& = UB(Ay)
 If U = -1 Then Exit Property

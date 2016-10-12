@@ -12,7 +12,7 @@ Private C_Wb_CusPrp As Dictionary
 Private C_Ws2_At As Range
 Private C_Ws2_Sq
 Private C_Ws2_FmtSpecAy() As String
-Const ZZV_A_Fv$ = "C:\Users\cheungj\Desktop\reconciliation\EDI\DE1_KERRY_0000019724_20160930180401.csv"
+Const ZZV_A_Fv$ = "C:\Users\cheungj\Desktop\reconciliation\EDI\SPO_KERRY_198101_2016100522164_V3.csv" ' DE1_KERRY_0000019724_20160930180401.csv"
 
 Private Sub ZZZ_CvEDIPth()
 CvEDIPth FfnPth(ZZV_A_Fv)
@@ -23,12 +23,9 @@ Dim FnAy$()
 Dim Xls As New Excel.Application
 FnAy = PthFnAy(EDIPth, "*.csv")
 Dim Fv$
-Dim Selected As Boolean
+Dim PfxAy$(): PfxAy = SplitLvs("SPO_")
 For J% = 0 To UB(FnAy)
-    Selected = False
-    If IsPfx(FnAy(J), "DE1") Then Selected = True
-    If IsPfx(FnAy(J), "HANMOV") Then Selected = True
-    If Selected Then
+    If IsPfxAy(FnAy(J), PfxAy) Then
         Debug.Print "CvEDIPth: ", J, UB(FnAy), FnAy(J)
         Fv = EDIPth & FnAy(J)
         CvEDI Fv, KillCsv, Xls
@@ -69,10 +66,11 @@ U% = UB(Ws1_Sq)
 Dim O() As Range
 ReDim O(U)
 R1& = 1
+C = 1
 If True Then    ' Multiple Columns
     For J% = 0 To U
-        C% = 1 + J * 2
         Set O(J) = WsRC(Ws1, 1, C)
+        C = C + UBound(Ws1_Sq(J), 2)
     Next
 Else
     R& = 1
@@ -169,9 +167,14 @@ End Property
 Private Property Get B_Wb_CusPrpNmLvm$(EDITy$)
 Select Case EDITy
 Case "DE1": B_Wb_CusPrpNmLvm = A_Wb_CusPrpNmLvm_DE1
-Case "SPO": B_Wb_CusPrpNmLvm = A_Wb_CusPrpNmLvm_SPO
 Case "DE2": B_CusPrpNmLvm = A_Wb_CusPrpNmLvm_DE2
-Case "IRP": B_CusPrpNmLvm = A_Wb_CusPrpNmLvm_IRM
+Case "HANMOV": B_CusPrpNmLvm = A_Wb_CusPrpNmLvm_HANMOV
+Case "IMN": B_CusPrpNmLvm = A_Wb_CusPrpNmLvm_IMN
+Case "IRP": B_CusPrpNmLvm = A_Wb_CusPrpNmLvm_IRP
+Case "IVM": B_CusPrpNmLvm = A_Wb_CusPrpNmLvm_IVM
+Case "LPD": B_CusPrpNmLvm = A_Wb_CusPrpNmLvm_LPD
+Case "PMU": B_CusPrpNmLvm = A_Wb_CusPrpNmLvm_PMU
+Case "SPO": B_Wb_CusPrpNmLvm = A_Wb_CusPrpNmLvm_SPO
 Case Else: Stop
 End Select
 End Property
@@ -226,18 +229,21 @@ ZZV_InpAy = FtAy(ZZV_A_Fv)
 End Property
 
 Private Sub Fmt_Ws1Sq(At As Range, Sq)
+
 PutSq At, Sq                    '<== PutSq
-RgeRCRC(At, 1, 1, 1, 2).EntireColumn.AutoFit        '<== AutoFit Column
+Dim R As Range
+    Set R = ReSzRge(At, Sq)
+
+R.EntireColumn.AutoFit        '<== AutoFit Column
 
 Dim R1 As Range
 Dim R2 As Range
-    Set R1 = RgeRCRC(At, 1, 1, 1, 2)
-    Set R2 = RgeRCRC(At, 2, 2, UBound(Sq, 1), 2)
+    NC% = UBound(Sq, 2)
+    Set R1 = RgeRCRC(At, 1, 1, 1, NC)
+    Set R2 = RgeRCRC(At, 2, 1, UBound(Sq, 1), 1)
     R1.Interior.Color = 14395790     '<== Color
     R2.Interior.Color = 15917520     '<== Color
-Dim R As Range
-    Set R = ReSzRge(At, Sq)
-SetBdr ReSzRge(At, Sq)          '<== Set Bdr
+SetBdr R          '<== Set Bdr
 RgeRR(R, 2, R.Rows.Count).EntireRow.OutlineLevel = 2
 RgeWs(R).OutLine.SummaryRow = xlSummaryAbove
 End Sub

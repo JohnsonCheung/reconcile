@@ -32,7 +32,7 @@ If IsMissing(O4) Then Exit Sub Else Assign Av(4), O4
 If IsMissing(O5) Then Exit Sub Else Assign Av(5), O5
 End Sub
 Sub Assign(V, O)
-If IsObject(O) Then
+If IsObject(V) Then
     Set O = V
 Else
     O = V

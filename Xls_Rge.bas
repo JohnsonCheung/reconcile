@@ -27,6 +27,9 @@ Else
     Set PutSq = R
 End If
 End Function
+Property Get RgeCRR(Rge As Range, C, R1, R2) As Range
+Set RgeCRR = RgeRCRC(Rge, R1, C, R2, C)
+End Property
 Private Sub ZZZ_PutSq()
 Dim Ws As Worksheet
     Set Ws = NewWs(Visible:=True)
@@ -106,15 +109,15 @@ Ws.Application.Quit
 Stop
 End Sub
 
-Private Sub ZZZ_SetFze()
+Private Sub ZZZ_FreezeAt()
 Dim Ws As Worksheet
 Dim At As Range
 Set Ws = NewWs(Visible:=True)
 Set At = Ws.Range("A2")
-SetFze At
+FreezeAt At
 End Sub
 
-Sub SetFze(At As Range)
+Sub FreezeAt(At As Range)
 Dim Wb As Workbook: Set Wb = RgeWs(At).Parent
 Dim Win As Excel.Window: Set Win = Wb.Windows(1)
 Win.WindowState = xlMaximized

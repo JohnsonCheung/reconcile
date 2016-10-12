@@ -13,7 +13,7 @@ CvKW_TotCal = O
 End Property
 Property Get CvKW_HAlign(KW_HAlign$) As XlHAlign
 Dim O As XlTotalsCalculation
-Select Case KW_TotCal
+Select Case KW_HAlign
 Case "*Center": O = XlHAlign.xlHAlignCenter
 Case "*Left": O = XlHAlign.xlHAlignLeft
 Case "*Right": O = XlHAlign.xlHAlignRight
@@ -32,3 +32,4 @@ Case Else: O = Val(KW_Colr)
 End Select
 CvKW_Colr = O
 End Property
+

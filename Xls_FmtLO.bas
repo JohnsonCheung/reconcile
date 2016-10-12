@@ -49,7 +49,7 @@ For J& = 1 To UBound(Sq, 1)
     Next
 Next
 Rge.Value = Sq
-Rge.NumberFormat = "YYYY/MM/DD"
+Rge.NumberFormat = "YYYY/MM/DD;;#"
 End Sub
 
 Private Property Get BB_Alias_To_Cno_Dict(Alias_To_FldNm_Dict As Dictionary) As Dictionary
@@ -76,8 +76,9 @@ A$ = ZSpecRightVal("YYYYMMDD")
 CC_YYYYMMDD = Array(ZAliasLvs_Col(A))
 End Property
 
-Private Property Get CC_WrapTxt_Rge() As Range()
-
+Private Property Get CC_WrapTxt() As Variant()
+A$ = ZSpecRightVal("WrapTxt")
+CC_WrapTxt = Array(ZAliasLvs_Col(A))
 End Property
 
 Private Property Get CC_Colr() As Variant()
@@ -97,39 +98,35 @@ Next
 CC_Colr = Array(O1, O2)
 End Property
 
-Private Property Get ZAliasLvs_Cno%(Alias$)
-Dim D As Dictionary: Set D = B_Alias_To_Cno_Dict
-If D.Exists(Alias) Then
-    ZAliasLvs_Cno = D(Alias)
-Else
-    ZAliasLvs_Cno = -1
-End If
-End Property
-
 Private Property Get ZAliasLvs_EntCol(AliasLvs$) As Range()
 Dim A$(): A = SplitLvs(AliasLvs)
 U% = UB(A)
 Dim O() As Range: ReDim O(U)
 Dim Rge As Range: Set Rge = A_LO.DataBodyRange
 For J% = 0 To U
-    C% = ZAliasLvs_Cno(A(J))
+    If Not B_Alias_To_Cno_Dict.Exists(A(J)) Then Stop
+    C% = B_Alias_To_Cno_Dict(A(J))
     Set O(J) = RgeC(Rge, C).EntireColumn
 Next
 ZAliasLvs_EntCol = O
 End Property
 
-Private Property Get ZAliasLvs_Col(AliasLvs$) As Range()
+Private Property Get ZAliasLvs_Col(AliasLvs$, Optional InclTot As Boolean) As Range()
 Dim A$(): A = SplitLvs(AliasLvs)
 U% = UB(A)
 If U = -1 Then Exit Property
 Dim O() As Range: ReDim O(U)
 Dim Rge As Range: Set Rge = A_LO.DataBodyRange
 For J% = 0 To U
-    C% = ZAliasLvs_Cno(A(J))
-    Set O(J) = RgeC(Rge, C)
+    If Not B_Alias_To_Cno_Dict.Exists(A(J)) Then Stop
+    C% = B_Alias_To_Cno_Dict(A(J))
+    R1& = IIf(InclTot, -2, 1)
+    R2& = Rge.Rows.Count
+    Set O(J) = RgeCRR(Rge, C, R1, R2)
 Next
 ZAliasLvs_Col = O
 End Property
+
 Private Sub ZZZ_CC_Freeze()
 ZZX_Set_AB_Var
 AssignAv CC_Freeze, C_Freeze_Cell
@@ -137,14 +134,19 @@ Dim Act As Range
 Set Act = C_Freeze_Cell
 Stop
 End Sub
+
 Private Sub ZZV___LPD()
 
 End Sub
 
-
-
-
 Sub FmtLO(LO As ListObject, SpecAy$())
+If Sz(SpecAy) = 0 Then
+    Dim Ws As Worksheet
+    Set Ws = LO.Parent
+    Ws.Cells.EntireColumn.AutoFit
+    FreezeAt Ws.Range("A2")
+    Exit Sub
+End If
 Set A_LO = LO
 B_FldNmAy = LOFldNmAy(A_LO)
 Set B_SpecDict = BB_SpecDict(SpecAy)
@@ -210,14 +212,14 @@ Dim H As Range: Set H = C_HdrHgt_Row
                    F% = C_HdrHgt_Factor
 If IsNothing(H) Then Exit Sub
 If F <= 0 Then Exit Sub
-If F > 4 Then F = 4
+If F > 5 Then F = 5
 H.EntireRow.RowHeight = H.RowHeight * F
 H.HorizontalAlignment = XlHAlign.xlHAlignLeft
 H.VerticalAlignment = XlVAlign.xlVAlignTop
 H.WrapText = True
 End Sub
 Private Sub SetFreeze()
-SetFze C_Freeze_Cell
+FreezeAt C_Freeze_Cell
 End Sub
 
 Private Sub FmtLO__Tst()
@@ -319,10 +321,6 @@ AssignAv mNum____, C_Num_Rge
 AssignAv mYYYYMMDD, C_YYYYMMDD_Rge
 End Sub
 
-Private Property Get CC_WrapTxt() As Variant()
-A$ = ZSpecRightVal("WrapTxt")
-CC_WrapTxt = Array(ZAliasLvs_Col(A))
-End Property
 
 Private Property Get CC_Tot() As Variant()
 Dim A$(): A = ZSpecItm("Tot")
@@ -433,6 +431,8 @@ End With
 End Sub
 
 Private Property Get CC_HAlign() As Variant()
+Dim HasTot As Boolean
+    HasTot = Sz(ZSpecItm("Tot")) >= 2
 Dim H() As XlHAlign
 Dim C()
 Dim A$(): A = ZSpecItm("HAlign")
@@ -442,7 +442,7 @@ ReSzAy C, U
 For J% = 0 To U
     With Brk(A(J), "|")
         H(J) = CvKW_HAlign(.S1)
-        C(J) = ZAliasLvs_Col(.S2)
+        C(J) = ZAliasLvs_Col(.S2, InclTot:=HasTot)
     End With
 Next
 CC_HAlign = Array(H, C)
@@ -574,7 +574,7 @@ End Property
 
 Private Property Get BB_FldNmAy(LO As ListObject) As String()
 A = LO.HeaderRowRange.Value
-BB_FldNmAy = CvAyToStr(CvSqRow(A, 1))
+BB_FldNmAy = TrmAy(CvAyToStr(CvSqRow(A, 1)))
 End Property
 
 Private Property Get ZSpecRightVal$(Itm$)
@@ -585,13 +585,15 @@ End Property
 
 Private Property Get CC_HdrHgt() As Variant()
 Dim HdrHgt_Factor%
-    HdrHgt_Factor = ZSpecRightVal("HdrHgt")
+    HdrHgt_Factor = Val(ZSpecRightVal("HdrHgt"))
 
 Dim HdrHgt_Row As Range
     Set HdrHgt_Row = A_LO.HeaderRowRange
 CC_HdrHgt = Array(HdrHgt_Factor, HdrHgt_Row)
 End Property
+
 Private Property Get CC_NumFmt() As Variant()
+Dim HasTot As Boolean: HasTot = Sz(ZSpecItm("Tot")) >= 2
 Dim A$(): A = ZSpecItm("NumFmt")
 U% = UB(A)
 Dim O1$(), O2()
@@ -600,7 +602,7 @@ ReSzAy O2, U
 For J% = 0 To U
     With Brk(A(J), "|")
         O1(J) = .S1
-        O2(J) = ZAliasLvs_Col(.S2)
+        O2(J) = ZAliasLvs_Col(.S2, InclTot:=HasTot)
     End With
 Next
 CC_NumFmt = Array(O1, O2)
@@ -645,7 +647,9 @@ For J% = 0 To UB(A)
     RgeAy = C(J)
     For Each I In RgeAy
         Set Rge = I
+        If Rge.Row = 4 Then Stop
         Rge.HorizontalAlignment = A(J)
+        Rge.Application.Visible = True
     Next
 Next
 End Sub
@@ -717,7 +721,7 @@ If Sz(R) = 0 Then Exit Sub
 Dim Rge As Range
 For Each I In R
     Set Rge = I
-    Rge.NumberFormat = "YYYY/MM/DD"
+    Rge.NumberFormat = "YYYY/MM/DD;;#"
 Next
 End Sub
 
@@ -793,11 +797,6 @@ Private Sub ZZZ_CC_YYYYMMDD()
 ZZX_Set_AB_Var
 Av = CC_YYYYMMDD
 C_YYYYMMDD_Rge = Av(0)
-End Sub
-Private Sub ZZZ_ZAliasLvs_Cno()
-ZZX_Set_AB_Var
-Act% = ZAliasLvs_Cno("TstDte")
-Stop
 End Sub
 
 
